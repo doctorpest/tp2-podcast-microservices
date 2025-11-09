@@ -101,8 +101,8 @@ sequenceDiagram
 ## 🚀 Étape 1 : Cloner le projet
 
 ```bash
-git clone https://github.com/doctorpest/TP2_Microservices_Architecture.git
-cd TP2_Microservices_Architecture
+git clone https://github.com/doctorpest/tp2-podcast-microservices.git
+cd tp2-podcast-microservices
 
 ```
 Ou bien juste télécharger le zip. 
@@ -261,6 +261,7 @@ Ayat Allah EL Anouar, Elmamoune Mikou
 - [RabbitMQ Tutorials](https://www.rabbitmq.com/getstarted.html)
 - [Docker Compose](https://docs.docker.com/compose/)
 - [HTMX](https://htmx.org/)   
+
 
 
 
