@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Booking Console</title>
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <!-- Dark mode toggle -->
+  <script>
+    // dark mode persistant
+    const pref = localStorage.getItem('theme');
+    if (pref === 'dark' || (!pref && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+    function toggleTheme() {
+      const el = document.documentElement;
+      el.classList.toggle('dark');
+      localStorage.setItem('theme', el.classList.contains('dark') ? 'dark' : 'light');
+    }
+  </script>
+  <style>
+    /* micro-anim */
+    .card { transition: transform .15s ease, box-shadow .2s ease; }
+    .card:hover { transform: translateY(-1px); }
+    .btn { transition: transform .05s ease; }
+    .btn:active { transform: translateY(1px); }
+  </style>
+</head>
+<body class="min-h-full bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
+  <header class="sticky top-0 z-10 backdrop-blur bg-white/70 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-800">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+      <h1 class="text-xl md:text-2xl font-semibold tracking-tight">🎙️ Booking Console</h1>
+      <div class="flex items-center gap-2">
+        <a href="/docs" class="btn inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 text-sm font-medium shadow-sm">
+          API Docs
+        </a>
+        <button onclick="toggleTheme()" class="btn rounded-xl border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
+          🌗 Thème
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-6 space-y-6">
+    <!-- Form card -->
+    <section class="card rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-800/60 shadow-sm">
+      <div class="p-4 md:p-6">
+        <h2 class="text-lg font-medium mb-4">Créer une réservation</h2>
+        <form hx-post="/ui/create" hx-target="#tbl" hx-swap="outerHTML" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div>
+            <label class="block text-sm mb-1">User ID</label>
+            <input name="user_id" type="number" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Studio ID</label>
+            <input name="studio_id" type="number" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Début</label>
+            <input name="start" type="datetime-local" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Fin</label>
+            <input name="end" type="datetime-local" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
+          </div>
+          <div class="flex items-end">
+            <button class="btn w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 font-medium shadow-sm">
+              Créer
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Table card -->
+    <section class="card rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-800/60 shadow-sm">
+      <div class="p-4 md:p-6">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-medium">Réservations récentes</h2>
+          
+        </div>
+        <div id="tbl">
+          {% include "table.html" %}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="mt-8 pb-10 text-center text-xs text-slate-500">
+    TP Microservices — Booking/Access/Quota/Notification
+  </footer>
+</body>
+</html>

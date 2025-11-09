@@ -1,0 +1,106 @@
+version: "3.9"
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports: ["5672:5672", "15672:15672"]
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit loopback_users "none"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  booking_db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: booking
+    ports: ["5433:5432"]   # port local 5433
+    volumes: ["booking_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d booking"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  booking:
+    build: ./services/booking
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@booking_db:5432/booking
+      - RABBITMQ_HOST=rabbitmq
+      - ACCESS_URL=http://access:8001
+      - QUOTA_URL=http://quota:8002
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      booking_db:
+        condition: service_healthy
+    ports: ["8000:8000"]
+
+  access_db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: access
+    ports: ["5435:5432"]
+    volumes: ["access_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d access"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  access:
+    build: ./services/access
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@access_db:5432/access
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      access_db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports: ["8001:8001"]
+
+  quota_db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: quota
+    ports: ["5436:5432"]
+    volumes: ["quota_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d quota"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  quota:
+    build: ./services/quota
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@quota_db:5432/quota
+      - RABBITMQ_HOST=rabbitmq
+      - QUOTA_MAX_MIN_PER_WEEK=180
+    depends_on:
+      quota_db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports: ["8002:8002"]
+
+  notification:
+    build: ./services/notification
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    ports: ["8004:8004"]
+
+volumes:
+  booking_data:
+  access_data:
+  quota_data:
