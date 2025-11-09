@@ -8,50 +8,6 @@ Chaque service est indépendant et communique via **RabbitMQ** à travers des **
 ## 🧩 Architecture générale
 
 ### 🗺️ Diagramme global
-```mermaid
-flowchart TB
-  U[UI / User API]
-  B[Booking Service]
-  A[Access Service]
-  Q[Quota Service]
-  N[Notification Service]
-  R[(RabbitMQ Broker)]
-
-  %% User -> Booking (REST)
-  U -->|HTTP REST| B
-
-  %% Booking publishes event
-  B -->|BookingCreated| R
-
-  %% Broker fanout to Access & Quota
-  R -->|BookingCreated| A
-  R -->|BookingCreated| Q
-
-  %% Replies
-  A -->|AccessCodeIssued| R
-  Q -->|QuotaReserved| R
-
-  %% Booking consumes both
-  R -->|AccessCodeIssued| B
-  R -->|QuotaReserved| B
-
-  %% Booking confirmation
-  B -->|BookingReady| R
-  R -->|BookingReady| N
-
-  %% Optional runtime cycle
-  U -->|Check-in and Check-out| B
-  B -->|StatusUpdated| R
-  R -->|StatusUpdated| N
-
-  %% Visual grouping
-  subgraph Microservices
-    A
-    B
-    Q
-    N
-  end
-```
 
 ```mermaid
 flowchart LR
@@ -81,6 +37,8 @@ flowchart LR
   B -->|BookingReady| R
   R -->|BookingReady| N
 ```
+
+### 🗺️ Diagramme de séquence des messages 
 
 ```mermaid
 sequenceDiagram
@@ -297,6 +255,7 @@ Ayat Allah EL Anouar, Elmamoune Mikou
 - [RabbitMQ Tutorials](https://www.rabbitmq.com/getstarted.html)
 - [Docker Compose](https://docs.docker.com/compose/)
 - [HTMX](https://htmx.org/)   
+
 
 
 
