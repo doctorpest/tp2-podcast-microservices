@@ -10,49 +10,47 @@ Chaque service est indépendant et communique via **RabbitMQ** à travers des **
 ### 🗺️ Diagramme global
 ```mermaid
 flowchart TB
-    U[UI / User API]
-    B[Booking Service]
-    A[Access Service]
-    Q[Quota Service]
-    N[Notification Service]
-    R[(RabbitMQ Broker)]
+  U[UI / User API]
+  B[Booking Service]
+  A[Access Service]
+  Q[Quota Service]
+  N[Notification Service]
+  R[(RabbitMQ Broker)]
 
-    %% User Interaction
-    U -->|HTTP REST| B
+  %% User -> Booking (REST)
+  U -->|HTTP REST| B
 
-    %% Booking publishes events
-    B -->|BookingCreated| R
+  %% Booking publishes event
+  B -->|BookingCreated| R
 
-    %% Quota & Access consume events
-    R -->|BookingCreated| Q
-    R -->|BookingCreated| A
+  %% Broker fanout to Access & Quota
+  R -->|BookingCreated| A
+  R -->|BookingCreated| Q
 
-    %% They reply with new events
-    Q -->|QuotaReserved| R
-    A -->|AccessCodeIssued| R
+  %% Replies
+  A -->|AccessCodeIssued| R
+  Q -->|QuotaReserved| R
 
-    %% Booking consumes both to finalize
-    R -->|QuotaReserved / AccessCodeIssued| B
+  %% Booking consumes both
+  R -->|AccessCodeIssued| B
+  R -->|QuotaReserved| B
 
-    %% Booking emits confirmation
-    B -->|BookingReady| R
-    R -->|BookingReady| N
+  %% Booking confirmation
+  B -->|BookingReady| R
+  R -->|BookingReady| N
 
-    %% Notification informs user
-    N -->|Send confirmation| U
+  %% Optional runtime cycle
+  U -->|Check-in and Check-out| B
+  B -->|StatusUpdated| R
+  R -->|StatusUpdated| N
 
-    %% Optional check-in/out cycle
-    U -->|Check-in / Check-out (HTTP)| B
-    B -->|StatusUpdated| R
-    R -->|StatusUpdated| N
-
-    subgraph Microservices
-        A
-        B
-        Q
-        N
-    end
-
+  %% Visual grouping
+  subgraph Microservices
+    A
+    B
+    Q
+    N
+  end
 ```
 
 ### 🧠 Description des composants
@@ -128,7 +126,7 @@ curl -X POST http://localhost:8000/v1/bookings \
 
 ### ➡️ Réponse attendue 
 
-```
+```bash
 {
   "id": 10,
   "user_id": 7,
@@ -141,7 +139,7 @@ curl -X POST http://localhost:8000/v1/bookings \
 
 ### Consulter la réservation
 
-```
+```bash
 {
   "id": 10,
   "user_id": 7,
@@ -164,7 +162,7 @@ curl -X POST "http://localhost:8000/v1/bookings/10/checkin?code=707684"
 
 ### ➡️ Réponse attendue dans le cas où c'est l'heure de la réservation   
 
-```
+```bash
  {"detail": "IN_USE"}"
 
 ```
@@ -240,4 +238,5 @@ Ayat Allah EL Anouar, Elmamoune Mikou
 - [RabbitMQ Tutorials](https://www.rabbitmq.com/getstarted.html)
 - [Docker Compose](https://docs.docker.com/compose/)
 - [HTMX](https://htmx.org/)   
+
 
